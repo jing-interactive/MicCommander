@@ -1,4 +1,4 @@
-ITEM_DEF(int, _APP_WIDTH, 400)
-ITEM_DEF(int, _APP_HEIGHT, 400)
+ITEM_DEF(int, _APP_WIDTH, 600)
+ITEM_DEF(int, _APP_HEIGHT, 600)
 ITEM_DEF(string, _STATUS, "")
 ITEM_DEF(string, _WORD, "")

@@ -103,11 +103,15 @@ public:
             return;
         }
 
-        auto params = createConfigUI({ _APP_WIDTH, _APP_HEIGHT });
+        auto params = createConfigUI({ 400, 200 });
         params->addButton("Start Record", [&] {
             if (int errcode = sr_start_listening(&iat)) {
                 _STATUS = "Start listen failed";
                 //quit();
+            }
+            else
+            {
+                _STATUS = "Started";
             }
         });
 
@@ -115,6 +119,10 @@ public:
             if (int errcode = sr_stop_listening(&iat)) {
                 _STATUS = "Stop listen failed";
                 //quit();
+            }
+            else
+            {
+                _STATUS = "Stopped";
             }
         });
 
