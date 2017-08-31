@@ -25,6 +25,9 @@
     <Filter Include="Blocks\vnm\include">
       <UniqueIdentifier>{BBB7952E-D9B3-4942-943F-0F220E668D92}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Blocks\imgui">
+      <UniqueIdentifier>{21f858e8-1b9d-450f-b809-3bdfbc965c3b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\MicCommanderApp.cpp">
@@ -75,9 +78,6 @@
     <ClInclude Include="..\..\Cinder\blocks\Cinder-VNM\include\TextureHelper.h">
       <Filter>Blocks\vnm\include</Filter>
     </ClInclude>
-    <ClCompile Include="..\src\iat_record_sample.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\speech_recognizer.c">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -4,9 +4,12 @@
 #include "cinder/CameraUi.h"
 #include "cinder/Log.h"
 #include "cinder/params/Params.h"
+#include "cinder/Font.h"
 
 #include "AssetManager.h"
 #include "MiniConfig.h"
+#include "MiniConfig.h"
+#include "AnsiToUtf.h"
 
 #include "msp_cmn.h"
 #include "msp_errors.h"
@@ -31,37 +34,27 @@ using namespace ci;
 using namespace ci::app;
 using namespace std;
 
-static char *g_result = NULL;
-static unsigned int g_buffersize = BUFFER_SIZE;
+string g_word;
 
 void on_result(const char *result, char is_last)
 {
-    if (result) {
-        size_t left = g_buffersize - 1 - strlen(g_result);
-        size_t size = strlen(result);
-        if (left < size) {
-            g_result = (char*)realloc(g_result, g_buffersize + BUFFER_SIZE);
-            if (g_result)
-                g_buffersize += BUFFER_SIZE;
-            else {
-                CI_LOG_I("mem alloc failed");
-                return;
-            }
+    if (result)
+    {
+        if (is_last)
+        {
+            _WORD = g_word;
+            CI_LOG_I(_WORD);
         }
-        strncat(g_result, result, size);
-        _WORD = g_result;
+        else
+        {
+            g_word += result;
+        }
     }
 }
+
 void on_speech_begin()
 {
-    if (g_result)
-    {
-        free(g_result);
-    }
-    g_result = (char*)malloc(BUFFER_SIZE);
-    g_buffersize = BUFFER_SIZE;
-    memset(g_result, 0, g_buffersize);
-
+    g_word = "";
     _STATUS = "Start Listening...";
 }
 
@@ -75,7 +68,8 @@ void on_speech_end(int reason)
 
 class MicCommanderApp : public App
 {
-    speech_rec iat;
+    speech_rec  iat;
+    ci::Font    mFontCN;
 
 public:
     void setup() override
@@ -83,7 +77,8 @@ public:
         log::makeLogger<log::LoggerFile>();
 
         int ret = MSPLogin(NULL, NULL, login_params); //第一个参数是用户名，第二个参数是密码，均传NULL即可，第三个参数是登录参数	
-        if (MSP_SUCCESS != ret) {
+        if (MSP_SUCCESS != ret)
+        {
             CI_LOG_E("MSPLogin failed , Error code " << ret);
             quit();
             return;
@@ -97,7 +92,8 @@ public:
         };
 
         int errcode = sr_init(&iat, session_begin_params, SR_MIC, DEFAULT_INPUT_DEVID, &recnotifier);
-        if (errcode) {
+        if (errcode)
+        {
             CI_LOG_E("speech recognizer init failed\n");
             quit();
             return;
@@ -105,7 +101,8 @@ public:
 
         auto params = createConfigUI({ 400, 200 });
         params->addButton("Start Record", [&] {
-            if (int errcode = sr_start_listening(&iat)) {
+            if (int errcode = sr_start_listening(&iat))
+            {
                 _STATUS = "Start listen failed";
                 //quit();
             }
@@ -115,8 +112,12 @@ public:
             }
         });
 
+        const string kMSYH = AnsiToUtf8("微软雅黑");
+        mFontCN = Font(kMSYH, 24);
+
         params->addButton("Stop Record", [&] {
-            if (int errcode = sr_stop_listening(&iat)) {
+            if (int errcode = sr_stop_listening(&iat))
+            {
                 _STATUS = "Stop listen failed";
                 //quit();
             }
@@ -131,8 +132,11 @@ public:
         });
 
         getWindow()->getSignalDraw().connect([&] {
+            gl::setMatricesWindow(getWindowSize());
             gl::clear();
             gl::ScopedGlslProg glsl(am::glslProg("color"));
+
+            gl::drawString(AnsiToUtf8(_WORD), { 30,250 }, ColorA::white(), mFontCN);
         });
 
         getSignalCleanup().connect([&] {
