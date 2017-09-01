@@ -6,8 +6,9 @@
 #include "cinder/params/Params.h"
 #include "cinder/Font.h"
 
+#include "OscHelper.h"
+
 #include "AssetManager.h"
-#include "MiniConfig.h"
 #include "MiniConfig.h"
 #include "AnsiToUtf.h"
 
@@ -15,8 +16,14 @@
 #include "msp_errors.h"
 #include "speech_recognizer.h"
 
-#define FRAME_LEN	640 
-#define	BUFFER_SIZE	4096
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+
+unique_ptr<osc::SenderUdp> mOscSender;
+unique_ptr<osc::ReceiverUdp> mOscReceiver;
+speech_rec  iat;
+string g_word;
 
 const char* login_params = "appid = 57bb9136, work_dir = ."; // µÇÂ¼²ÎÊý£¬appidÓëmsc¿â°ó¶¨,ÇëÎðËæÒâ¸Ä¶¯
 /*
@@ -30,12 +37,6 @@ const char* login_params = "appid = 57bb9136, work_dir = ."; // µÇÂ¼²ÎÊý£¬appidÓ
 */
 const char* session_begin_params = "sub = iat, domain = iat, language = zh_cn, accent = mandarin, sample_rate = 16000, result_type = plain, result_encoding = gb2312";
 
-using namespace ci;
-using namespace ci::app;
-using namespace std;
-
-string g_word;
-
 void on_result(const char *result, char is_last)
 {
     if (result)
@@ -43,6 +44,9 @@ void on_result(const char *result, char is_last)
         if (is_last)
         {
             _WORD = g_word;
+            osc::Message msg("/word");
+            msg.append(_WORD);
+            mOscSender->send(msg);
             CI_LOG_I(_WORD);
         }
         else
@@ -66,15 +70,47 @@ void on_speech_end(int reason)
         _STATUS = "Recognizer error";
 }
 
+void startRecording()
+{
+    if (int errcode = sr_start_listening(&iat))
+    {
+        _STATUS = "Start listen failed";
+    }
+    else
+    {
+        _STATUS = "Started";
+    }
+}
+
+void endRecording()
+{
+    if (int errcode = sr_stop_listening(&iat))
+    {
+        _STATUS = "Stop listen failed";
+    }
+    else
+    {
+        _STATUS = "Stopped";
+    }
+}
+
 class MicCommanderApp : public App
 {
-    speech_rec  iat;
-    ci::Font    mFontCN;
+    ci::Font mFontCN;
 
 public:
     void setup() override
     {
         log::makeLogger<log::LoggerFile>();
+
+        mOscSender = OscHelper::createSender(_REMOTE_IP, _REMOTE_PORT);
+        mOscReceiver = OscHelper::createReceiver(_LOCAL_PORT);
+        mOscReceiver->setListener("/start", [&](const osc::Message& message) {
+            startRecording();
+        });
+        mOscReceiver->setListener("/end", [&](const osc::Message& message) {
+            endRecording();
+        });
 
         int ret = MSPLogin(NULL, NULL, login_params); //µÚÒ»¸ö²ÎÊýÊÇÓÃ»§Ãû£¬µÚ¶þ¸ö²ÎÊýÊÇÃÜÂë£¬¾ù´«NULL¼´¿É£¬µÚÈý¸ö²ÎÊýÊÇµÇÂ¼²ÎÊý	
         if (MSP_SUCCESS != ret)
@@ -100,31 +136,13 @@ public:
         }
 
         auto params = createConfigUI({ 400, 200 });
-        params->addButton("Start Record", [&] {
-            if (int errcode = sr_start_listening(&iat))
-            {
-                _STATUS = "Start listen failed";
-                //quit();
-            }
-            else
-            {
-                _STATUS = "Started";
-            }
-        });
+        params->addButton("Start Record", startRecording);
 
-        const string kMSYH = AnsiToUtf8("Î¢ÈíÑÅºÚ");
+        auto kMSYH = AnsiToUtf8("Î¢ÈíÑÅºÚ");
         mFontCN = Font(kMSYH, 24);
 
         params->addButton("Stop Record", [&] {
-            if (int errcode = sr_stop_listening(&iat))
-            {
-                _STATUS = "Stop listen failed";
-                //quit();
-            }
-            else
-            {
-                _STATUS = "Stopped";
-            }
+
         });
 
         getWindow()->getSignalKeyUp().connect([&](KeyEvent& event) {
