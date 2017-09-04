@@ -135,15 +135,12 @@ public:
             return;
         }
 
-        auto params = createConfigUI({ 400, 200 });
-        params->addButton("Start Record", startRecording);
+        auto params = createConfigUI({ 400, 250 });
+        params->addButton("/start", startRecording);
+        params->addButton("/end", endRecording);
 
         auto kMSYH = AnsiToUtf8("Î¢ÈíÑÅºÚ");
         mFontCN = Font(kMSYH, 24);
-
-        params->addButton("Stop Record", [&] {
-
-        });
 
         getWindow()->getSignalKeyUp().connect([&](KeyEvent& event) {
             if (event.getCode() == KeyEvent::KEY_ESCAPE) quit();
@@ -154,7 +151,7 @@ public:
             gl::clear();
             gl::ScopedGlslProg glsl(am::glslProg("color"));
 
-            gl::drawString(AnsiToUtf8(_WORD), { 30,250 }, ColorA::white(), mFontCN);
+            gl::drawString(AnsiToUtf8(_WORD), { 30,300 }, ColorA::white(), mFontCN);
         });
 
         getSignalCleanup().connect([&] {
