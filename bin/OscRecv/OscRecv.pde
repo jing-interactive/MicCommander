@@ -18,21 +18,23 @@ void setup() {
   frameRate(25);
   oscP5 = new OscP5(this, 3333);
   myRemoteLocation = new NetAddress("127.0.0.1", 3000);
+  PFont font = createFont("宋体", 24);
+  textFont(font);
 }
 
 void mouseClicked() {
   OscMessage m = new OscMessage(mouseButton == LEFT ? "/start" : "/end");
+  println("Clicked");
   oscP5.send(m, myRemoteLocation);
 }
 
 void draw() {
   background(0); 
   text("Click mouse:\nleft to send /start\nright to send /end\n" + info, 10, height/2);
-  
 }
 
 void oscEvent(OscMessage m) {
   /* check if theOscMessage has the address pattern we are looking for. */
-  info = "### received "+m.addrPattern();
+  info = "### received "+m.addrPattern() + " " + m.get(0).stringValue();
   println(info);
 }

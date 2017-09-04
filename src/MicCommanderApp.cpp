@@ -43,11 +43,19 @@ void on_result(const char *result, char is_last)
     {
         if (is_last)
         {
-            _WORD = g_word;
-            osc::Message msg("/word");
-            msg.append(_WORD);
-            mOscSender->send(msg);
-            CI_LOG_I(_WORD);
+            {
+                osc::Message msg("/word/gb2312");
+                msg.append(g_word);
+                mOscSender->send(msg);
+                CI_LOG_I(g_word);
+            }
+
+            {
+                osc::Message msg("/word/utf8");
+                _WORD = AnsiToUtf8(g_word);
+                msg.append(_WORD);
+                mOscSender->send(msg);
+            }
         }
         else
         {
@@ -58,7 +66,7 @@ void on_result(const char *result, char is_last)
 
 void on_speech_begin()
 {
-    g_word = "";
+    _WORD = g_word = "";
     _STATUS = "Start Listening...";
 }
 
@@ -138,6 +146,8 @@ public:
         auto params = createConfigUI({ 400, 250 });
         params->addButton("/start", startRecording);
         params->addButton("/end", endRecording);
+        params->addText("Input: /start and /end");
+        params->addText("Output: /word/gb2312 and /word/utf8");
 
         auto kMSYH = AnsiToUtf8("Î¢ÈíÑÅºÚ");
         mFontCN = Font(kMSYH, 24);
@@ -151,7 +161,7 @@ public:
             gl::clear();
             gl::ScopedGlslProg glsl(am::glslProg("color"));
 
-            gl::drawString(AnsiToUtf8(_WORD), { 30,300 }, ColorA::white(), mFontCN);
+            gl::drawString(_WORD, { 30,300 }, ColorA::white(), mFontCN);
         });
 
         getSignalCleanup().connect([&] {
