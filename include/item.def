@@ -1,7 +1,10 @@
+GROUP_DEF("Config")
 ITEM_DEF(int, _APP_WIDTH, 600)
 ITEM_DEF(int, _APP_HEIGHT, 600)
 ITEM_DEF(int, _LOCAL_PORT, 3000)
 ITEM_DEF(string, _REMOTE_IP, "127.0.0.1")
 ITEM_DEF(int, _REMOTE_PORT, 3333)
+
+GROUP_DEF("Status")
 ITEM_DEF(string, _STATUS, "")
 ITEM_DEF(string, _WORD, "")

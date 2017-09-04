@@ -143,7 +143,7 @@ public:
             return;
         }
 
-        auto params = createConfigUI({ 400, 250 });
+        auto params = createConfigUI({ 400, 300 });
         params->addButton("/start", startRecording);
         params->addButton("/end", endRecording);
         params->addText("Input: /start and /end");
@@ -161,7 +161,7 @@ public:
             gl::clear();
             gl::ScopedGlslProg glsl(am::glslProg("color"));
 
-            gl::drawString(_WORD, { 30,300 }, ColorA::white(), mFontCN);
+            gl::drawString(_WORD, { 30,350 }, ColorA::white(), mFontCN);
         });
 
         getSignalCleanup().connect([&] {
