@@ -16,6 +16,8 @@
 #include "msp_errors.h"
 #include "speech_recognizer.h"
 
+#include <fstream>
+
 using namespace ci;
 using namespace ci::app;
 using namespace std;
@@ -45,7 +47,10 @@ void on_result(const char *result, char is_last)
         {
             {
                 osc::Message msg("/word/gb2312");
-                msg.append(g_word);
+                auto gb2312 = getAppPath() / "gb2312.txt";
+                ofstream ofs(gb2312.string());
+                ofs << g_word;
+                msg.append(gb2312.string());
                 mOscSender->send(msg);
                 CI_LOG_I(g_word);
             }
@@ -53,6 +58,12 @@ void on_result(const char *result, char is_last)
             {
                 osc::Message msg("/word/utf8");
                 _WORD = AnsiToUtf8(g_word);
+
+                auto utf8 = getAppPath() / "utf8.txt";
+                ofstream ofs(utf8.string());
+                ofs << _WORD;
+                msg.append(utf8.string());
+
                 msg.append(_WORD);
                 mOscSender->send(msg);
             }

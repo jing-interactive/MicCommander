@@ -18,8 +18,8 @@ void setup() {
   frameRate(25);
   oscP5 = new OscP5(this, 3333);
   myRemoteLocation = new NetAddress("127.0.0.1", 3000);
-  PFont font = createFont("宋体", 24);
-  textFont(font);
+  //PFont font = createFont("宋体", 24);
+  //textFont(font);
 }
 
 void mouseClicked() {
